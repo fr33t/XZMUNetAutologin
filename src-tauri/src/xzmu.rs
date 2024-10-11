@@ -45,3 +45,11 @@ pub async fn get_account<R: Runtime>(app: tauri::AppHandle<R>) -> Option<XZMUAcc
 
     Some(account)
 }
+
+#[tauri::command]
+pub async fn save_account<R: Runtime>(app: tauri::AppHandle<R>, account: XZMUAccount) -> bool {
+    let config_path = util::get_xzmu_config_path(&app).await;
+    let file_writer = File::create(config_path).unwrap();
+    serde_json::to_writer(file_writer, &account).unwrap();
+    true
+}

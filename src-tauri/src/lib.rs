@@ -10,7 +10,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             xzmu::test_network,
             xzmu::get_conf,
-            xzmu::get_account
+            xzmu::get_account,
+            xzmu::save_account,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

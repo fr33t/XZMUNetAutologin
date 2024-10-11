@@ -2,12 +2,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { onMounted, ref } from 'vue';
 import router from '../router';
-
-type XZMUAccount = {
-    username: String,
-    password: String,
-
-}
+import { XZMUAccount } from '../structs';
 
 const internet_status = ref(0);
 const app_conf = ref('');

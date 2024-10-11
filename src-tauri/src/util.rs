@@ -42,7 +42,7 @@ pub(crate) async fn test_internet_connection() -> bool {
 
 pub(crate) async fn get_xzmu_config_path<R: Runtime>(app: &AppHandle<R>) -> PathBuf {
     app.path()
-        .app_config_dir()
+        .app_data_dir()
         .unwrap()
         .join("xzmu-autologin.json")
 }
