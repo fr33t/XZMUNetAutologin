@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { onMounted, ref } from 'vue';
 import router from '../router';
 import { XZMUAccount } from '../structs';
-import { trace, info, error, attachConsole } from '@tauri-apps/plugin-log';
+import { info } from '@tauri-apps/plugin-log';
 
 
 
