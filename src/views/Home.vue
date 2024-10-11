@@ -3,12 +3,16 @@ import { invoke } from '@tauri-apps/api/core';
 import { onMounted, ref } from 'vue';
 import router from '../router';
 import { XZMUAccount } from '../structs';
+import { trace, info, error, attachConsole } from '@tauri-apps/plugin-log';
+
+
 
 const internet_status = ref(0);
 const app_conf = ref('');
 const account = ref<XZMUAccount>();
 
 onMounted(async () => {
+    info('from Home.vue');
     const data: number = await invoke('test_network');
     internet_status.value = data;
 
@@ -27,7 +31,9 @@ onMounted(async () => {
     <div>
         <div v-if="internet_status === 1">
             <v-alert class="mt-3 ml-3 mr-3 mb-3" text="欢迎使用西藏民族大学校园网络" title="您已登陆" type="success"></v-alert>
-            <v-alert v-if="!account" class="mt-3 ml-3 mr-3 mb-3" text="检测到您未保存凭证！" title="未保存凭证" type="info"
+            <v-alert v-if="!account" class="mt-3 ml-3 mr-3 mb-3" text="检测到您未保存凭证！" title="未保存凭证" type="warning"
+                variant="tonal"></v-alert>
+            <v-alert v-else class="mt-3 ml-3 mr-3 mb-3" :text='account.username.toString()' title="当前用户" type="info"
                 variant="tonal"></v-alert>
         </div>
 

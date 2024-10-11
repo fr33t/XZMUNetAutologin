@@ -3,10 +3,13 @@ use std::io::BufReader;
 
 use crate::structs::*;
 use crate::util;
+
+use log::info;
 use tauri::Runtime;
 
 #[tauri::command]
 pub async fn test_network() -> i32 {
+    info!("test_network");
     let xzmu_result = util::test_command_xzmu().await;
     let network_result = util::test_internet_connection().await;
     //
@@ -28,6 +31,7 @@ pub async fn test_network() -> i32 {
 
 #[tauri::command]
 pub async fn get_conf<R: Runtime>(app: tauri::AppHandle<R>) -> Result<String, String> {
+    info!("get_conf");
     Ok(util::get_xzmu_config_path(&app)
         .await
         .to_string_lossy()
@@ -36,6 +40,7 @@ pub async fn get_conf<R: Runtime>(app: tauri::AppHandle<R>) -> Result<String, St
 
 #[tauri::command]
 pub async fn get_account<R: Runtime>(app: tauri::AppHandle<R>) -> Option<XZMUAccount> {
+    info!("get_account");
     let config_path = util::get_xzmu_config_path(&app).await;
     if !config_path.exists() {
         return None;
@@ -48,6 +53,7 @@ pub async fn get_account<R: Runtime>(app: tauri::AppHandle<R>) -> Option<XZMUAcc
 
 #[tauri::command]
 pub async fn save_account<R: Runtime>(app: tauri::AppHandle<R>, account: XZMUAccount) -> bool {
+    info!("save_account");
     let config_path = util::get_xzmu_config_path(&app).await;
     let file_writer = File::create(config_path).unwrap();
     serde_json::to_writer(file_writer, &account).unwrap();
