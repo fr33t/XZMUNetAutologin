@@ -13,6 +13,7 @@ pub fn run() {
             xzmu::get_conf,
             xzmu::get_account,
             xzmu::save_account,
+            xzmu::login,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

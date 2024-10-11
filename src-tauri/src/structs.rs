@@ -1,15 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct XZMUAccount {
-    username: String,
-    password: String,
+pub(crate) struct XZMUAccount {
+    pub(crate) username: String,
+    pub(crate) password: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct XZMUNetConfig {
-    wlan_user_ip: String,
-    wlan_user_mac: String,
-    wlan_ac_ip: String,
-    wlan_ac_name: String,
+pub(crate) struct XZMUNetConfig {
+    pub(crate) wlan_user_ip: String,
+    pub(crate) wlan_user_mac: String,
+    pub(crate) wlan_ac_ip: String,
+    pub(crate) wlan_ac_name: String,
 }

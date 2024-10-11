@@ -32,7 +32,7 @@ const save_xzmu_account = async () => {
             <v-btn class="mt-2" type="reset" @click="router.push('/')" block>返回</v-btn>
         </v-form>
     </v-sheet>
-    <div>{{ sa }}
-    </div>
+    <!-- <div>{{ sa }}
+    </div> -->
 </template>
 <style scoped></style>

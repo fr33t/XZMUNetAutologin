@@ -15,12 +15,24 @@ onMounted(async () => {
     info('from Home.vue');
     const data: number = await invoke('test_network');
     internet_status.value = data;
+    info(internet_status.value.toString());
 
     const app_conf_data: string = await invoke('get_conf');
     app_conf.value = app_conf_data;
+    info(app_conf.value.toString());
 
     const account_data: XZMUAccount = await invoke('get_account');
     account.value = account_data;
+    info(account.value.toString());
+
+
+    if (data === 2) {
+        internet_status.value = await invoke("login", { account: account.value })
+        info("login")
+        info(internet_status.value.toString());
+    }
+
+
 })
 
 
@@ -50,12 +62,19 @@ onMounted(async () => {
             <v-alert class="mt-3 ml-3 mr-3 mb-3" text="检测到您已与互联网断开连接，并未连接校园WIFI" title="未连接" type="error"></v-alert>
         </div>
 
+        <div v-else-if="internet_status === -1">
+            <v-alert class="mt-3 ml-3 mr-3 mb-3" text="请检查您的凭证或设备数量是否限制" title="认证失败" type="error"
+                variant="tonal"></v-alert>
+        </div>
+
         <div class="mt-3 ml-3 mr-3 mb-3">
             <v-btn rounded="lg" size="x-large" @click="router.push('/login')" block>重置凭证</v-btn>
         </div>
+
+
     </div>
 
-    <div>
+    <!-- <div>
         {{ internet_status }}
     </div>
     <div>
@@ -63,5 +82,5 @@ onMounted(async () => {
     </div>
     <div>
         {{ account }}
-    </div>
+    </div> -->
 </template>

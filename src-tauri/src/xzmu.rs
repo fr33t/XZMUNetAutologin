@@ -3,9 +3,9 @@ use std::io::BufReader;
 
 use crate::structs::*;
 use crate::util;
-
 use log::info;
 use tauri::Runtime;
+use tauri_plugin_http::reqwest::{self, header};
 
 #[tauri::command]
 pub async fn test_network() -> i32 {
@@ -58,4 +58,47 @@ pub async fn save_account<R: Runtime>(app: tauri::AppHandle<R>, account: XZMUAcc
     let file_writer = File::create(config_path).unwrap();
     serde_json::to_writer(file_writer, &account).unwrap();
     true
+}
+
+#[tauri::command]
+pub async fn login(account: XZMUAccount) -> i32 {
+    info!("login");
+    let xzmu_net_config = util::get_xzmu_net_config().await;
+    info!("{:?}", xzmu_net_config);
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        "User-Agent",
+        header::HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"),
+    );
+    headers.insert(
+        "Referer",
+        header::HeaderValue::from_static("http://10.1.0.212/"),
+    );
+
+    let login_url = format!(
+        "http://10.1.0.212:801/eportal/portal/login?callback=dr1003&login_method=1&user_account=,0,{}&user_password={}&wlan_user_ip={}&wlan_user_ipv6=&wlan_user_mac={}&wlan_ac_ip={}&wlan_ac_name={}&jsVersion=4.2&terminal_type=1&lang=zh-cn&v=2833&lang=zh"
+        ,account.username
+        ,account.password
+        ,xzmu_net_config.wlan_user_ip
+        ,xzmu_net_config.wlan_user_mac.replace("-","")
+        ,xzmu_net_config.wlan_ac_ip
+        ,xzmu_net_config.wlan_ac_name
+    );
+
+    let client = reqwest::ClientBuilder::new()
+        .default_headers(headers)
+        .build()
+        .unwrap();
+
+    let response = client.get(&login_url).send().await.unwrap();
+    println!("{:?}", login_url);
+    let body = response.text().await.unwrap();
+    // [Log] dr1003({"result":0,"msg":"ldap auth error","ret_code":1}); (Home.vue, line 24)
+    // [Log] dr1003({"result":1,"msg":"Portal协议认证成功！"}); (Home.vue, line 24)
+    println!("{:?}", body);
+    if !body.contains("Portal") {
+        return -1;
+    }
+
+    return test_network().await;
 }
