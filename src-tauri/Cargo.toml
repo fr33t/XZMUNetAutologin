@@ -1,6 +1,6 @@
 [package]
 name = "xzmunetautologin"
-version = "0.1.0"
+version = "1.0.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -27,3 +27,6 @@ tauri-plugin-log = "2"
 log = "0.4.22"
 regex = "1.11.0"
 url = "2.5.2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-autostart = "2"

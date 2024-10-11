@@ -5,6 +5,8 @@ import router from '../router';
 import { XZMUAccount } from '../structs';
 import { info } from '@tauri-apps/plugin-log';
 
+import { enable, isEnabled } from '@tauri-apps/plugin-autostart';
+
 
 
 const internet_status = ref(0);
@@ -13,6 +15,13 @@ const account = ref<XZMUAccount>();
 
 onMounted(async () => {
     info('from Home.vue');
+    // 启用 autostart
+    if (!await invoke('is_android')) {
+        await enable();
+        // 检查 enable 状态
+        console.log(`registered for autostart? ${await isEnabled()}`);
+    }
+
     const data: number = await invoke('test_network');
     internet_status.value = data;
     info(internet_status.value.toString());
@@ -26,7 +35,7 @@ onMounted(async () => {
     info(account.value.toString());
 
 
-    if (data === 2) {
+    if (data === 2 || data === 1) {
         internet_status.value = await invoke("login", { account: account.value })
         info("login")
         info(internet_status.value.toString());

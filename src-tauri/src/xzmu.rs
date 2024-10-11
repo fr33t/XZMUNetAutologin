@@ -1,11 +1,14 @@
-use std::fs::File;
-use std::io::BufReader;
-
 use crate::structs::*;
 use crate::util;
 use log::info;
+use regex::Regex;
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
 use tauri::Runtime;
 use tauri_plugin_http::reqwest::{self, header};
+use url::Url;
 
 #[tauri::command]
 pub async fn test_network() -> i32 {
@@ -63,7 +66,41 @@ pub async fn save_account<R: Runtime>(app: tauri::AppHandle<R>, account: XZMUAcc
 #[tauri::command]
 pub async fn login(account: XZMUAccount) -> i32 {
     info!("login");
-    let xzmu_net_config = util::get_xzmu_net_config().await;
+
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        "User-Agent",
+        header::HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"),
+    );
+
+    let client = reqwest::ClientBuilder::new()
+        .default_headers(headers)
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .unwrap();
+
+    let response = match client.get("http://10.10.0.163/").send().await {
+        Ok(response) => response,
+        Err(_) => {
+            return 1;
+        }
+    };
+
+    let body = response.text().await.map_err(|e| e.to_string()).unwrap();
+    let re = Regex::new(r#"location\.href="(.*?)""#).unwrap();
+    let login_url = re.captures(&body).unwrap().get(1).unwrap().as_str();
+
+    let s = Url::parse(login_url).unwrap();
+
+    let a: HashMap<Cow<str>, Cow<str>> = s.query_pairs().collect();
+
+    let xzmu_net_config = XZMUNetConfig {
+        wlan_user_ip: a.get("wlanuserip").unwrap().to_string(),
+        wlan_user_mac: a.get("wlanusermac").unwrap().to_string(),
+        wlan_ac_ip: a.get("wlanacip").unwrap().to_string(),
+        wlan_ac_name: a.get("wlanacname").unwrap().to_string(),
+    };
+
     info!("{:?}", xzmu_net_config);
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert(
@@ -90,15 +127,27 @@ pub async fn login(account: XZMUAccount) -> i32 {
         .build()
         .unwrap();
 
-    let response = client.get(&login_url).send().await.unwrap();
+    let response = match client.get(&login_url).send().await {
+        Ok(response) => response,
+        Err(_) => {
+            return 1;
+        }
+    };
     println!("{:?}", login_url);
     let body = response.text().await.unwrap();
     // [Log] dr1003({"result":0,"msg":"ldap auth error","ret_code":1}); (Home.vue, line 24)
     // [Log] dr1003({"result":1,"msg":"Portal协议认证成功！"}); (Home.vue, line 24)
     println!("{:?}", body);
-    if !body.contains("Portal") {
+    if body.contains("ldap auth error") {
         return -1;
     }
 
     return test_network().await;
+}
+
+#[tauri::command]
+pub async fn is_android<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Window<R>) -> bool {
+    let os = std::env::consts::OS.to_string();
+    info!("{}", os);
+    return os.contains("android");
 }

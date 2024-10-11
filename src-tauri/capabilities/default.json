@@ -9,7 +9,8 @@
     "core:default",
     "shell:allow-open",
     "http:default",
-    "log:default",
     "log:default"
+   
+    
   ]
 }
