@@ -146,7 +146,7 @@ pub async fn login(account: XZMUAccount) -> i32 {
 }
 
 #[tauri::command]
-pub async fn is_android<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Window<R>) -> bool {
+pub async fn is_android() -> bool {
     let os = std::env::consts::OS.to_string();
     info!("{}", os);
     return os.contains("android");

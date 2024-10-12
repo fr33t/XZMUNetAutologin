@@ -15,16 +15,6 @@ const account = ref<XZMUAccount>();
 
 onMounted(async () => {
     info('from Home.vue');
-    // 启用 autostart
-    if (!await invoke('is_android')) {
-        await enable();
-        // 检查 enable 状态
-        console.log(`registered for autostart? ${await isEnabled()}`);
-    }
-
-    const data: number = await invoke('test_network');
-    internet_status.value = data;
-    info(internet_status.value.toString());
 
     const app_conf_data: string = await invoke('get_conf');
     app_conf.value = app_conf_data;
@@ -34,12 +24,30 @@ onMounted(async () => {
     account.value = account_data;
     info(account.value.toString());
 
+    const data: number = await invoke('test_network');
+    internet_status.value = data;
+    info(internet_status.value.toString());
 
-    if (data === 2 || data === 1) {
-        internet_status.value = await invoke("login", { account: account.value })
-        info("login")
-        info(internet_status.value.toString());
+    // 启用 autostart
+    if (!await invoke('is_android')) {
+        await enable();
+        // 检查 enable 状态
+        console.log(`registered for autostart? ${await isEnabled()}`);
+        if (data === 2) {
+            internet_status.value = await invoke("login", { account: account.value })
+            info("login pc")
+            info(internet_status.value.toString());
+        }
+    } else {
+        if (data === 1 || data === 2) {
+            internet_status.value = await invoke("login", { account: account.value })
+            info("login android")
+            info(internet_status.value.toString());
+        }
     }
+
+
+
 
 
 })
