@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api/core';
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import router from '../router';
 import { XZMUAccount } from '../structs';
 import { info } from '@tauri-apps/plugin-log';
@@ -12,10 +12,8 @@ import { enable, isEnabled } from '@tauri-apps/plugin-autostart';
 const internet_status = ref(0);
 const app_conf = ref('');
 const account = ref<XZMUAccount>();
-
-onMounted(async () => {
-    info('from Home.vue');
-
+const init = async () => {
+    info("init");
     const app_conf_data: string = await invoke('get_conf');
     app_conf.value = app_conf_data;
     info(app_conf.value.toString());
@@ -24,35 +22,45 @@ onMounted(async () => {
     account.value = account_data;
     info(account.value.toString());
 
-    const data: number = await invoke('test_network');
-    internet_status.value = data;
+    internet_status.value = await invoke("login", { account: account.value })
     info(internet_status.value.toString());
+}
+let timer: number | null;
+
+onMounted(async () => {
+    info('from Home.vue');
+    timer = null;
+    await init(); // 第一次
+
+    if (internet_status.value !== 1) {
+        timer = setInterval(async () => {
+            await init();
+            info("尝试连接")
+        }, 5000)
+    } else {
+        timer = setInterval(async () => {
+            await init();
+            info("保持不掉线")
+        }, 60000 * 60)
+    }
 
     // 启用 autostart
     if (!await invoke('is_android')) {
         await enable();
         // 检查 enable 状态
         console.log(`registered for autostart? ${await isEnabled()}`);
-        if (data === 2) {
-            internet_status.value = await invoke("login", { account: account.value })
-            info("login pc")
-            info(internet_status.value.toString());
-        }
-    } else {
-        if (data === 1 || data === 2) {
-            internet_status.value = await invoke("login", { account: account.value })
-            info("login android")
-            info(internet_status.value.toString());
-        }
     }
 
 
-
-
+})
+onBeforeUnmount(() => {
+    if (timer) {
+        clearInterval(timer);
+        info("销毁定时器")
+        timer = null;
+    }
 
 })
-
-
 </script>
 
 <template>

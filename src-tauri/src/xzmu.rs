@@ -13,7 +13,7 @@ use url::Url;
 #[tauri::command]
 pub async fn test_network() -> i32 {
     info!("test_network");
-    let xzmu_result = util::test_command_xzmu().await;
+    let xzmu_result = util::test_xzmu_connection().await;
     let network_result = util::test_internet_connection().await;
     //
 
@@ -66,6 +66,10 @@ pub async fn save_account<R: Runtime>(app: tauri::AppHandle<R>, account: XZMUAcc
 #[tauri::command]
 pub async fn login(account: XZMUAccount) -> i32 {
     info!("login");
+    let status = test_network().await;
+    if status != 1 || status != 2 {
+        return status;
+    }
 
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert(
@@ -75,7 +79,7 @@ pub async fn login(account: XZMUAccount) -> i32 {
 
     let client = reqwest::ClientBuilder::new()
         .default_headers(headers)
-        .timeout(std::time::Duration::from_secs(5))
+        .timeout(std::time::Duration::from_secs(8))
         .build()
         .unwrap();
 

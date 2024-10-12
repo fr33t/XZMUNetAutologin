@@ -2,7 +2,7 @@ use std::{path::PathBuf, time::Duration};
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_http::reqwest;
 
-pub(crate) async fn test_command_xzmu() -> bool {
+pub(crate) async fn test_xzmu_connection() -> bool {
     let test_url = "http://120.95.80.23:8080/Self/login/";
     let client = reqwest::Client::builder()
         .timeout(Duration::from_millis(1000)) // 设置超时为 1.5 秒
