@@ -1,6 +1,7 @@
 mod structs;
 mod util;
 mod xzmu;
+use tauri::Manager;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use tauri::{
     menu::{Menu, MenuItem},
@@ -28,22 +29,43 @@ pub fn run() {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
         app_builder = app_builder
+            .on_window_event(|window, event| match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    window.hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            })
             .plugin(tauri_plugin_autostart::init(
                 MacosLauncher::LaunchAgent,
                 Some(vec!["--flag1", "--flag2"]), // 向应用传递的参数
             ))
+            .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }))
             .setup(|app| {
                 let quit_i = MenuItem::with_id(app, "quit", "关闭程序", true, None::<&str>)?;
-                let menu = Menu::with_items(app, &[&quit_i])?;
+                let show_i = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
+                let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
 
                 let _tray = TrayIconBuilder::new()
                     .icon(app.default_window_icon().unwrap().clone())
                     .menu(&menu)
-                    .menu_on_left_click(false)
+                    .menu_on_left_click(true)
                     .on_menu_event(|app, event| match event.id.as_ref() {
                         "quit" => {
                             println!("quit");
                             app.exit(0);
+                        }
+                        "show" => {
+                            println!("show");
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
                         }
                         _ => {}
                     })
