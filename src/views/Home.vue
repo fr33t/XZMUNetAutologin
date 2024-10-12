@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import router from '../router';
 import { XZMUAccount } from '../structs';
 import { info } from '@tauri-apps/plugin-log';
-
+import fr33t_qr from '../assets/fr33t_qr.png';
 import { enable, isEnabled } from '@tauri-apps/plugin-autostart';
 
 
@@ -90,6 +90,12 @@ onMounted(async () => {
 
 
     </div>
+    <div class="text-center"> <!-- 使内容居中 -->
+        <v-img class="mb-0" cover :src="fr33t_qr" aspect-ratio="1.0"></v-img>
+        <div class="mt-0 small-text">欢迎关注公众号</div>
+    </div>
+
+
 
     <!-- <div>
         {{ internet_status }}
